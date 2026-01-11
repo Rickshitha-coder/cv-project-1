@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # -------------------------------
-# CSS for Professional Look
+# CSS for professional flat look
 # -------------------------------
 st.markdown("""
 <style>
@@ -23,16 +23,10 @@ body {
 }
 h1 {color: #4B0082; font-size: 2.8rem; font-weight:bold; text-align:center;}
 h2 {color: #6A0DAD; font-size: 1.8rem; font-weight:bold;}
-.section-content {
-    padding: 20px;
-    border-radius: 15px;
-    background-color: white;
-    box-shadow: 2px 2px 15px rgba(0,0,0,0.08);
-    margin-bottom: 20px;
-}
 .stButton>button {background-color: #6A0DAD; color: white; border-radius: 10px; height: 3em; font-weight:bold;}
 .stDownloadButton>button {background-color: #4B0082; color: white; border-radius: 10px; height: 3em; font-weight:bold;}
 .footer {color: gray; font-size:0.9rem; text-align:center; margin-top:20px;}
+.section-padding {padding: 15px;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -64,7 +58,7 @@ if "show_camera" not in st.session_state:
     st.session_state.show_camera = False
 
 # -------------------------------
-# Columns Layout (Webcam | Upload)
+# Columns Layout
 # -------------------------------
 col1, col2 = st.columns(2)
 
@@ -72,8 +66,8 @@ col1, col2 = st.columns(2)
 # Left Column: Webcam
 # -------------------------------
 with col1:
-    st.markdown("<div class='section-content'>", unsafe_allow_html=True)
     st.subheader("📷 Webcam Snapshot")
+    st.markdown("<div class='section-padding'>", unsafe_allow_html=True)
     
     if st.button("Activate Webcam"):
         st.session_state.show_camera = True
@@ -92,7 +86,6 @@ with col1:
                     st.image(img, caption="Color Snapshot")
                     filename = "webcam_snapshot_color.png"
 
-                # Download
                 buf = BytesIO()
                 download_img.save(buf, format="PNG")
                 st.download_button(
@@ -107,8 +100,8 @@ with col1:
 # Right Column: Upload Image
 # -------------------------------
 with col2:
-    st.markdown("<div class='section-content'>", unsafe_allow_html=True)
     st.subheader("🖼️ Upload Image (JPG/PNG)")
+    st.markdown("<div class='section-padding'>", unsafe_allow_html=True)
     
     uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
     
@@ -131,6 +124,7 @@ with col2:
             file_name=filename,
             mime="image/png"
         )
+    
     st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------------------
