@@ -13,6 +13,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# -------------------------------
+# Styles
+# -------------------------------
 st.markdown("""
 <style>
 h1 {color: #4B0082; font-size: 2.5rem;}
@@ -22,16 +25,19 @@ h2 {color: #6A0DAD; font-size: 1.8rem;}
 </style>
 """, unsafe_allow_html=True)
 
+# -------------------------------
+# App Title
+# -------------------------------
 st.title("🎨 Universal Color ↔ Black & White Converter")
 st.markdown("Convert your images or webcam snapshots into **Color** or **Black & White** instantly!")
 
 # -------------------------------
-# Mode selection
+# Mode Selection
 # -------------------------------
 mode = st.radio("Choose Mode:", ("Color", "Black & White"))
 
 # -------------------------------
-# Helper function: convert to B&W
+# Helper Function: Convert to B&W
 # -------------------------------
 def convert_to_bw(pil_img):
     if pil_img.mode != "RGB":
@@ -41,39 +47,46 @@ def convert_to_bw(pil_img):
     return Image.fromarray(gray)
 
 # -------------------------------
-# Webcam snapshot section
+# Webcam Section with Session State
 # -------------------------------
 st.markdown("---")
 st.subheader("1️⃣ Webcam Snapshot")
 
-# Show camera widget
-webcam_img = st.camera_input("Activate Webcam")
+# Initialize session state
+if "show_camera" not in st.session_state:
+    st.session_state.show_camera = False
 
-# Process snapshot only if button is clicked
-if webcam_img is not None:
-    if st.button("Take Snapshot"):
-        img = Image.open(webcam_img)
-        if mode == "Black & White":
-            download_img = convert_to_bw(img)
-            st.image(download_img, caption="Black & White Snapshot")
-            filename = "webcam_snapshot_bw.png"
-        else:
-            download_img = img
-            st.image(img, caption="Color Snapshot")
-            filename = "webcam_snapshot_color.png"
+# Button to activate webcam
+if st.button("Activate Webcam"):
+    st.session_state.show_camera = True
 
-        # Download button
-        buf = BytesIO()
-        download_img.save(buf, format="PNG")
-        st.download_button(
-            "⬇️ Download Snapshot",
-            data=buf.getvalue(),
-            file_name=filename,
-            mime="image/png"
-        )
+# Show camera only if activated
+if st.session_state.show_camera:
+    webcam_img = st.camera_input("Take Snapshot")
+    if webcam_img is not None:
+        if st.button("Process Snapshot"):
+            img = Image.open(webcam_img)
+            if mode == "Black & White":
+                download_img = convert_to_bw(img)
+                st.image(download_img, caption="Black & White Snapshot")
+                filename = "webcam_snapshot_bw.png"
+            else:
+                download_img = img
+                st.image(img, caption="Color Snapshot")
+                filename = "webcam_snapshot_color.png"
+
+            # Download button
+            buf = BytesIO()
+            download_img.save(buf, format="PNG")
+            st.download_button(
+                "⬇️ Download Snapshot",
+                data=buf.getvalue(),
+                file_name=filename,
+                mime="image/png"
+            )
 
 # -------------------------------
-# Image upload section
+# Image Upload Section
 # -------------------------------
 st.markdown("---")
 st.subheader("2️⃣ Upload Image (JPG/PNG)")
@@ -106,6 +119,6 @@ if uploaded_file is not None:
 # -------------------------------
 st.markdown("---")
 st.markdown(
-    "<p style='color: gray; font-size:0.9rem;'>Developed with 💜 using Streamlit | Supports JPG & PNG images only | Webcam snapshot processed only when button clicked.</p>",
+    "<p style='color: gray; font-size:0.9rem;'>Developed with 💜 using Streamlit | Supports JPG & PNG images only | Webcam activates only after clicking 'Activate Webcam'.</p>",
     unsafe_allow_html=True
 )
