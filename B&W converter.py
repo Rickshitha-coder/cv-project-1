@@ -4,9 +4,12 @@ import numpy as np
 from PIL import Image
 from io import BytesIO
 from docx import Document
-from pdf2image import convert_from_bytes
+import fitz  # PyMuPDF
 from PyPDF2 import PdfWriter, PdfReader
 
+# -------------------------------
+# Streamlit Page Config
+# -------------------------------
 st.set_page_config(page_title="Universal Color ↔ B&W Converter", layout="wide")
 st.title("🎨 Universal Color ↔ Black & White Converter")
 
@@ -24,6 +27,8 @@ if st.button("Take Webcam Snapshot"):
             st.image(frame, caption="Black & White Snapshot", channels="GRAY")
         else:
             st.image(frame, caption="Color Snapshot", channels="BGR")
+    else:
+        st.error("Could not access webcam.")
 
 st.write("---")
 st.subheader("2️⃣ Upload Image or Document")
@@ -38,36 +43,38 @@ if uploaded_file is not None:
     # ---------- Image Files ----------
     if uploaded_file.type in ["image/jpeg", "image/png"]:
         img = cv2.imdecode(np.frombuffer(file_bytes, np.uint8), cv2.IMREAD_COLOR)
-        if mode == "Black & White":
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            st.image(gray, caption="Black & White Image", channels="GRAY")
+        if img is None:
+            st.error("Could not read image file.")
         else:
-            st.image(img, caption="Color Image", channels="BGR")
-
+            if mode == "Black & White":
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                st.image(gray, caption="Black & White Image", channels="GRAY")
+            else:
+                st.image(img, caption="Color Image", channels="BGR")
+    
     # ---------- PDF Files ----------
     elif uploaded_file.type == "application/pdf":
-        images = convert_from_bytes(file_bytes)
-        st.write(f"PDF has {len(images)} pages.")
-        converted_pages = []
-        for i, img in enumerate(images):
-            img_np = np.array(img)
-            if mode == "Black & White":
-                gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-                converted_pages.append(Image.fromarray(gray))
-            else:
-                converted_pages.append(img)
-            st.image(converted_pages[-1], caption=f"Page {i+1}")
-        # Optional: Save as new PDF
-        pdf_bytes = BytesIO()
-        converted_pages[0].save(pdf_bytes, format="PDF", save_all=True, append_images=converted_pages[1:])
-        st.download_button("Download Converted PDF", pdf_bytes.getvalue(), file_name="converted.pdf")
+        try:
+            doc = fitz.open(stream=BytesIO(file_bytes), filetype="pdf")
+            st.write(f"PDF has {doc.page_count} pages.")
+            converted_pages = []
 
+            for i, page in enumerate(doc):
+                pix = page.get_pixmap()
+                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                if mode == "Black & White":
+                    img = img.convert("L")  # grayscale
+                converted_pages.append(img)
+                st.image(img, caption=f"Page {i+1}")
+
+            # Save as new PDF for download
+            pdf_bytes = BytesIO()
+            converted_pages[0].save(pdf_bytes, format="PDF", save_all=True, append_images=converted_pages[1:])
+            st.download_button("Download Converted PDF", pdf_bytes.getvalue(), file_name="converted.pdf")
+        except Exception as e:
+            st.error(f"Failed to process PDF: {e}")
+    
     # ---------- Word Files ----------
     elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        doc = Document(BytesIO(file_bytes))
-        st.write(f"Word document has {len(doc.inline_shapes)} images.")
-        # Extract images and convert
-        for i, shape in enumerate(doc.inline_shapes):
-            img = shape._inline.graphic.graphicData.pic.blipFill.blip.embed
-            st.write("Image conversion for Word inline shapes will require extra low-level handling.")
-        st.info("PDF conversion is recommended for full document image extraction.")
+        st.warning("Word image extraction is not fully supported. "
+                   "Please convert Word to PDF first for full functionality.")
