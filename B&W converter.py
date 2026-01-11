@@ -5,7 +5,7 @@ import cv2
 from io import BytesIO
 
 # -------------------------------
-# Streamlit Page Config
+# Page config
 # -------------------------------
 st.set_page_config(
     page_title="🎨 Color ↔ Black & White Converter",
@@ -13,9 +13,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# -------------------------------
-# App Title and Description
-# -------------------------------
 st.markdown("""
 <style>
 h1 {color: #4B0082; font-size: 2.5rem;}
@@ -29,15 +26,12 @@ st.title("🎨 Universal Color ↔ Black & White Converter")
 st.markdown("Convert your images or webcam snapshots into **Color** or **Black & White** instantly!")
 
 # -------------------------------
-# Mode Selection
+# Mode selection
 # -------------------------------
 mode = st.radio("Choose Mode:", ("Color", "Black & White"))
 
-st.markdown("---")
-st.subheader("1️⃣ Webcam Snapshot")
-
 # -------------------------------
-# Helper Function: Convert to B&W
+# Helper function: convert to B&W
 # -------------------------------
 def convert_to_bw(pil_img):
     if pil_img.mode != "RGB":
@@ -47,11 +41,17 @@ def convert_to_bw(pil_img):
     return Image.fromarray(gray)
 
 # -------------------------------
-# Webcam Button Trigger
+# Webcam snapshot section
 # -------------------------------
-if st.button("Take Webcam Snapshot"):
-    webcam_img = st.camera_input("Webcam Activated - Take Snapshot")
-    if webcam_img is not None:
+st.markdown("---")
+st.subheader("1️⃣ Webcam Snapshot")
+
+# Show camera widget
+webcam_img = st.camera_input("Activate Webcam")
+
+# Process snapshot only if button is clicked
+if webcam_img is not None:
+    if st.button("Take Snapshot"):
         img = Image.open(webcam_img)
         if mode == "Black & White":
             download_img = convert_to_bw(img)
@@ -72,6 +72,9 @@ if st.button("Take Webcam Snapshot"):
             mime="image/png"
         )
 
+# -------------------------------
+# Image upload section
+# -------------------------------
 st.markdown("---")
 st.subheader("2️⃣ Upload Image (JPG/PNG)")
 
@@ -99,10 +102,10 @@ if uploaded_file is not None:
     )
 
 # -------------------------------
-# Footer / Notes
+# Footer
 # -------------------------------
 st.markdown("---")
 st.markdown(
-    "<p style='color: gray; font-size:0.9rem;'>Developed with 💜 using Streamlit | Supports JPG & PNG images only | Webcam activates only on click.</p>",
+    "<p style='color: gray; font-size:0.9rem;'>Developed with 💜 using Streamlit | Supports JPG & PNG images only | Webcam snapshot processed only when button clicked.</p>",
     unsafe_allow_html=True
 )
