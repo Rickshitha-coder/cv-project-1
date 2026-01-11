@@ -1,35 +1,46 @@
 import streamlit as st
 from PIL import Image
-from io import BytesIO
-from docx import Document
-from PyPDF2 import PdfReader
+import numpy as np
+import cv2
 
-st.set_page_config(page_title="Simple B&W Converter", layout="wide")
-st.title("🎨 Image & Document Converter (B&W)")
+# -------------------------------
+# Streamlit Page Config
+# -------------------------------
+st.set_page_config(page_title="Color ↔ B&W Converter", layout="wide")
+st.title("🎨 Color ↔ Black & White Converter")
 
+# Choose mode
 mode = st.radio("Choose Mode:", ("Color", "Black & White"))
 
-uploaded_file = st.file_uploader(
-    "Upload Image (JPG, PNG) or Document (PDF, DOCX)",
-    type=["jpg", "jpeg", "png", "pdf", "docx"]
-)
-
-if uploaded_file:
-    file_bytes = uploaded_file.read()
-
-    # Image handling
-    if uploaded_file.type in ["image/jpeg", "image/png"]:
-        img = Image.open(BytesIO(file_bytes))
+st.write("---")
+st.subheader("1️⃣ Webcam Snapshot")
+if st.button("Take Webcam Snapshot"):
+    cap = cv2.VideoCapture(0)
+    ret, frame = cap.read()
+    cap.release()
+    if ret:
         if mode == "Black & White":
-            img = img.convert("L")
-        st.image(img, caption="Converted Image")
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            st.image(frame, caption="Black & White Snapshot", channels="GRAY")
+        else:
+            st.image(frame, caption="Color Snapshot", channels="BGR")
+    else:
+        st.error("Could not access webcam.")
 
-    # PDF handling (metadata only)
-    elif uploaded_file.type == "application/pdf":
-        pdf = PdfReader(BytesIO(file_bytes))
-        st.write(f"PDF has {len(pdf.pages)} pages. Rendering not supported in this build.")
+st.write("---")
+st.subheader("2️⃣ Upload Image")
+uploaded_file = st.file_uploader("Upload Image (JPG/PNG)", type=["jpg", "jpeg", "png"])
 
-    # Word handling
-    elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        doc = Document(BytesIO(file_bytes))
-        st.write(f"Word document has {len(doc.inline_shapes)} images (cannot render).")
+if uploaded_file is not None:
+    img = Image.open(uploaded_file)
+    img_np = np.array(img)
+
+    if mode == "Black & White":
+        # Convert to grayscale
+        if len(img_np.shape) == 3 and img_np.shape[2] == 3:
+            gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+        else:
+            gray = img_np
+        st.image(gray, caption="Black & White Image", channels="GRAY")
+    else:
+        st.image(img_np, caption="Color Image", channels="RGB")
