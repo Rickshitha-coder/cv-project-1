@@ -1,4 +1,7 @@
-streamlit
-numpy
-opencv-python-headless
-streamlit-webrtc
+streamlit==1.28.0
+numpy==1.27.0
+opencv-python-headless==4.8.1.78
+Pillow==10.1.0
+python-docx==0.8.12
+PyPDF2==3.0.1
+pdf2image==1.16.4
