@@ -6,6 +6,7 @@ from PIL import Image
 st.set_page_config(page_title="Parking Slot Detection", layout="wide")
 st.title("🅿️ Parking Slot Detection Demo")
 
+# --------------------------
 # Upload an image
 uploaded_file = st.file_uploader("Upload a parking lot image", type=["png", "jpg", "jpeg"])
 
@@ -18,7 +19,8 @@ if uploaded_file is not None:
     st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), caption="Original Parking Lot Image", use_column_width=True)
 
     # --------------------------
-    # Define Parking Slots (same as your code)
+    # Define Parking Slots (adjust manually based on your image)
+    # Here, I’m using 8 slots as in your previous code
     parking_slots = [
         (0, 0, 140, 200),
         (150, 0, 140, 200),
@@ -30,6 +32,7 @@ if uploaded_file is not None:
         (450, 200, 140, 200)
     ]
 
+    # --------------------------
     # Detect occupancy
     free_count = 0
     for (x, y, w, h) in parking_slots:
@@ -43,11 +46,12 @@ if uploaded_file is not None:
         )
         non_zero_count = cv2.countNonZero(thresh)
 
+        # Simple threshold for occupancy (tune as needed)
         if non_zero_count > 5000:
-            color = (0, 0, 255)
+            color = (0, 0, 255)  # Red → OCCUPIED
             status = "OCCUPIED"
         else:
-            color = (0, 255, 0)
+            color = (0, 255, 0)  # Green → FREE
             status = "FREE"
             free_count += 1
 
