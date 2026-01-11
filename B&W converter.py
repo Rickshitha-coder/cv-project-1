@@ -8,20 +8,35 @@ from io import BytesIO
 # Page config
 # -------------------------------
 st.set_page_config(
-    page_title="🎨 Color ↔ Black & White Converter",
+    page_title="🎨 Color ↔ B&W Converter",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # -------------------------------
-# Styles
+# CSS for professional look
 # -------------------------------
 st.markdown("""
 <style>
-h1 {color: #4B0082; font-size: 2.5rem;}
-h2 {color: #6A0DAD; font-size: 1.8rem;}
-.stButton>button {background-color: #6A0DAD; color: white; border-radius: 10px; height: 3em;}
-.stDownloadButton>button {background-color: #4B0082; color: white; border-radius: 10px; height: 3em;}
+/* Headings */
+h1 {color: #4B0082; font-size: 2.8rem; font-weight:bold;}
+h2 {color: #6A0DAD; font-size: 1.8rem; font-weight:bold;}
+
+/* Section cards */
+.section-card {
+    padding: 20px;
+    border-radius: 15px;
+    background-color: #f7f7f7;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+/* Buttons */
+.stButton>button {background-color: #6A0DAD; color: white; border-radius: 10px; height: 3em; font-weight:bold;}
+.stDownloadButton>button {background-color: #4B0082; color: white; border-radius: 10px; height: 3em; font-weight:bold;}
+
+/* Footer */
+.footer {color: gray; font-size:0.9rem; text-align:center;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -34,7 +49,7 @@ st.markdown("Convert your images or webcam snapshots into **Color** or **Black &
 # -------------------------------
 # Mode Selection
 # -------------------------------
-mode = st.radio("Choose Mode:", ("Color", "Black & White"))
+mode = st.radio("Choose Mode:", ("Color", "Black & White"), horizontal=True)
 
 # -------------------------------
 # Helper Function: Convert to B&W
@@ -47,20 +62,18 @@ def convert_to_bw(pil_img):
     return Image.fromarray(gray)
 
 # -------------------------------
-# Webcam Section with Session State
+# Webcam Section
 # -------------------------------
-st.markdown("---")
-st.subheader("1️⃣ Webcam Snapshot")
+st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+st.subheader("📷 Webcam Snapshot")
 
-# Initialize session state
+# Session state for webcam
 if "show_camera" not in st.session_state:
     st.session_state.show_camera = False
 
-# Button to activate webcam
 if st.button("Activate Webcam"):
     st.session_state.show_camera = True
 
-# Show camera only if activated
 if st.session_state.show_camera:
     webcam_img = st.camera_input("Take Snapshot")
     if webcam_img is not None:
@@ -75,7 +88,7 @@ if st.session_state.show_camera:
                 st.image(img, caption="Color Snapshot")
                 filename = "webcam_snapshot_color.png"
 
-            # Download button
+            # Download
             buf = BytesIO()
             download_img.save(buf, format="PNG")
             st.download_button(
@@ -84,12 +97,13 @@ if st.session_state.show_camera:
                 file_name=filename,
                 mime="image/png"
             )
+st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------------------
-# Image Upload Section
+# Upload Section
 # -------------------------------
-st.markdown("---")
-st.subheader("2️⃣ Upload Image (JPG/PNG)")
+st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+st.subheader("🖼️ Upload Image (JPG/PNG)")
 
 uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
 
@@ -104,7 +118,7 @@ if uploaded_file is not None:
         st.image(img, caption="Color Image")
         filename = "uploaded_image_color.png"
 
-    # Download button
+    # Download
     buf = BytesIO()
     download_img.save(buf, format="PNG")
     st.download_button(
@@ -113,12 +127,13 @@ if uploaded_file is not None:
         file_name=filename,
         mime="image/png"
     )
+st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------------------
 # Footer
 # -------------------------------
 st.markdown("---")
 st.markdown(
-    "<p style='color: gray; font-size:0.9rem;'>Developed with 💜 using Streamlit | Supports JPG & PNG images only | Webcam activates only after clicking 'Activate Webcam'.</p>",
+    "<p class='footer'>Developed with 💜 using Streamlit | Supports JPG & PNG images only | Webcam activates only after clicking 'Activate Webcam'.</p>",
     unsafe_allow_html=True
 )
